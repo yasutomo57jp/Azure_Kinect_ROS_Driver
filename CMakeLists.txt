@@ -23,9 +23,9 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   message_generation
   visualization_msgs
-  CUDA 10.2 REQUIRED
 )
 
+find_package(CUDA 10.2 REQUIRED)
 ###################################
 ## catkin specific configuration ##
 ###################################

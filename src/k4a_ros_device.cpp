@@ -305,10 +305,11 @@ k4a_result_t K4AROSDevice::startCameras()
   // When calibration is initialized the body tracker can be created with the device calibration
   if (params_.body_tracking_enabled)
   {
-    k4abt_tracker_configuration_t k4abt_config = K4ABT_TRACKER_CONFIG_DEFAULT;
-    k4abt_config.processing_mode = K4ABT_TRACKER_PROCESSING_MODE_GPU;
-    k4abt_config.gpu_device_id = 0;
-    k4abt_tracker_ = k4abt::tracker::create(calibration_data_.k4a_calibration_, k4abt_config);
+    //k4abt_tracker_configuration_t k4abt_config = K4ABT_TRACKER_CONFIG_DEFAULT;
+    //k4abt_config.processing_mode = K4ABT_TRACKER_PROCESSING_MODE_GPU;
+    //k4abt_config.gpu_device_id = 0;
+    //k4abt_tracker_ = k4abt::tracker::create(calibration_data_.k4a_calibration_, k4abt_config);
+    k4abt_tracker_ = k4abt::tracker::create(calibration_data_.k4a_calibration_);
     k4abt_tracker_.set_temporal_smoothing(params_.body_tracking_smoothing_factor);
   }
 #endif
@@ -977,7 +978,7 @@ void K4AROSDevice::framePublisherThread()
 #if defined(K4A_BODY_TRACKING)
         // Publish body markers when body tracking is enabled and a depth image is available
         if (params_.body_tracking_enabled &&
-            (body_marker_publisher_.getNumSubscribers() > 0 || body_index_map_publisher_.getNumSubscribers() > 0))
+            (body_marker_publisher_.getNumSubscribers() > 0 || body_marker_wh_publisher_.getNumSubscribers() > 0 || body_index_map_publisher_.getNumSubscribers() > 0))
         {
           capture_time = timestampToROS(capture.get_depth_image().get_device_timestamp());
 
@@ -998,7 +999,7 @@ void K4AROSDevice::framePublisherThread()
             }
             else
             {
-              if (body_marker_publisher_.getNumSubscribers() > 0)
+              if (body_marker_publisher_.getNumSubscribers() > 0 or body_marker_wh_publisher_.getNumSubscribers() > 0)
               {
                 // Joint marker array
                 MarkerArrayPtr markerArrayPtr(new MarkerArray);
@@ -1015,7 +1016,7 @@ void K4AROSDevice::framePublisherThread()
                     markerArrayWHPtr->markers.push_back(*markerPtr);
                   }
                 }
-				markerArrayWHPtr->header = markerArrayWHPtr->markers[0].header;
+				markerArrayWHPtr->header.stamp = capture_time;
                 body_marker_publisher_.publish(markerArrayPtr);
                 body_marker_wh_publisher_.publish(markerArrayWHPtr);
               }
