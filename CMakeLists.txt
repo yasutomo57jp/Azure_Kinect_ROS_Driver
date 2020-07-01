@@ -21,6 +21,9 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nodelet
   cv_bridge
+  message_generation
+  visualization_msgs
+  CUDA 10.2 REQUIRED
 )
 
 ###################################
@@ -32,11 +35,23 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+add_message_files (
+	FILES
+	MarkerArrayWithHeader.msg
+)
+
+generate_messages(
+	DEPENDENCIES
+	std_msgs
+	visualization_msgs
+)
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES k4a_ros_bridge
 #  CATKIN_DEPENDS roscpp std_msgs
 #  DEPENDS system_lib
+CATKIN_DEPENDS std_msgs visualization_msgs message_runtime
 )
 
 ###########
@@ -47,7 +62,7 @@ catkin_package(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node
+cuda_add_executable(${PROJECT_NAME}_node
   src/k4a_ros_bridge_node.cpp
   src/k4a_ros_device.cpp
   src/k4a_ros_device_params.cpp
@@ -111,17 +126,20 @@ include(Installk4a)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${CUDA_INCLUDE_DIRS}
   "include"
 )
 
 target_link_libraries(${PROJECT_NAME}_node
   ${K4A_LIBS}
   ${catkin_LIBRARIES}
+  ${CUDA_LIBRARIES}
 )
 
 target_link_libraries(${PROJECT_NAME}_nodelet
   ${K4A_LIBS}
   ${catkin_LIBRARIES}
+  ${CUDA_LIBRARIES}
 )
 
 #############

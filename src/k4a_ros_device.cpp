@@ -4,6 +4,7 @@
 // Associated header
 //
 #include "azure_kinect_ros_driver/k4a_ros_device.h"
+#include "azure_kinect_ros_driver/MarkerArrayWithHeader.h"
 
 // System headers
 //
@@ -30,6 +31,7 @@ using namespace std;
 
 #if defined(K4A_BODY_TRACKING)
 using namespace visualization_msgs;
+using namespace azure_kinect_ros_driver;
 #endif
 
 K4AROSDevice::K4AROSDevice(const NodeHandle& n, const NodeHandle& p)
@@ -238,6 +240,7 @@ K4AROSDevice::K4AROSDevice(const NodeHandle& n, const NodeHandle& p)
 
 #if defined(K4A_BODY_TRACKING)
   body_marker_publisher_ = node_.advertise<MarkerArray>("body_tracking_data", 1);
+  body_marker_wh_publisher_ = node_.advertise<MarkerArrayWithHeader>("body_tracking_data_sync", 1);
 
   body_index_map_publisher_ = image_transport_.advertise("body_index_map/image_raw", 1);
 #endif
@@ -302,7 +305,10 @@ k4a_result_t K4AROSDevice::startCameras()
   // When calibration is initialized the body tracker can be created with the device calibration
   if (params_.body_tracking_enabled)
   {
-    k4abt_tracker_ = k4abt::tracker::create(calibration_data_.k4a_calibration_);
+    k4abt_tracker_configuration_t k4abt_config = K4ABT_TRACKER_CONFIG_DEFAULT;
+    k4abt_config.processing_mode = K4ABT_TRACKER_PROCESSING_MODE_GPU;
+    k4abt_config.gpu_device_id = 0;
+    k4abt_tracker_ = k4abt::tracker::create(calibration_data_.k4a_calibration_, k4abt_config);
     k4abt_tracker_.set_temporal_smoothing(params_.body_tracking_smoothing_factor);
   }
 #endif
@@ -996,6 +1002,7 @@ void K4AROSDevice::framePublisherThread()
               {
                 // Joint marker array
                 MarkerArrayPtr markerArrayPtr(new MarkerArray);
+                MarkerArrayWithHeaderPtr markerArrayWHPtr(new MarkerArrayWithHeader);
                 auto num_bodies = body_frame.get_num_bodies();
                 for (size_t i = 0; i < num_bodies; ++i)
                 {
@@ -1005,9 +1012,12 @@ void K4AROSDevice::framePublisherThread()
                     MarkerPtr markerPtr(new Marker);
                     getBodyMarker(body, markerPtr, j, capture_time);
                     markerArrayPtr->markers.push_back(*markerPtr);
+                    markerArrayWHPtr->markers.push_back(*markerPtr);
                   }
                 }
+				markerArrayWHPtr->header = markerArrayWHPtr->markers[0].header;
                 body_marker_publisher_.publish(markerArrayPtr);
+                body_marker_wh_publisher_.publish(markerArrayWHPtr);
               }
 
               if (body_index_map_publisher_.getNumSubscribers() > 0)

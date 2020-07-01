@@ -137,6 +137,7 @@ class K4AROSDevice
 
 #if defined(K4A_BODY_TRACKING)
   ros::Publisher body_marker_publisher_;
+  ros::Publisher body_marker_wh_publisher_;
 
   image_transport::Publisher body_index_map_publisher_;
 #endif

@@ -85,10 +85,12 @@ Licensed under the MIT License.
           args="load Azure_Kinect_ROS_Driver/K4AROSBridgeNodelet manager --no-bond"
           respawn="true">
       <param name="depth_enabled"     value="true" />
+      <param name="body_tracking_enabled" value="true" />
+      <param name="body_tracking_smoothing_factor" value="0" />
       <param name="depth_mode"        value="NFOV_UNBINNED" />
       <param name="color_enabled"     value="true" />
       <param name="color_resolution"  value="1536P" />
-      <param name="fps"               value="5" />
+      <param name="fps"               value="30" />
       <param name="point_cloud"       value="true" />
       <param name="rgb_point_cloud"   value="true" />
       <param name="required"          value="true" />

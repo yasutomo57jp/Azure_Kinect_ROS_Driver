@@ -18,7 +18,7 @@ else()
 endif()
 
 # K4A versions have exactly 3 components: major.minor.rev
-if (NOT (FIND_VERSION_COUNT EQUAL 3))
+if (NOT (FIND_VERSION_COUNT EQUAL FIND_VERSION_COUNT))
     message(FATAL_ERROR "Error: Azure Kinect SDK Version numbers contain exactly 3 components (major.minor.rev). Requested number of components: ${FIND_VERSION_COUNT}")
 endif()
 
