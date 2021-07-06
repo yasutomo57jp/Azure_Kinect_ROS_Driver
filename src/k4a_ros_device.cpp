@@ -236,13 +236,17 @@ K4AROSDevice::K4AROSDevice(const NodeHandle& n, const NodeHandle& p)
 
   imu_orientation_publisher_ = node_.advertise<Imu>("imu", 200);
 
-  pointcloud_publisher_ = node_.advertise<PointCloud2>("points2", 1);
+  if (params_.point_cloud || params_.rgb_point_cloud) {
+    pointcloud_publisher_ = node_.advertise<PointCloud2>("points2", 1);
+  }
 
 #if defined(K4A_BODY_TRACKING)
-  body_marker_publisher_ = node_.advertise<MarkerArray>("body_tracking_data", 1);
-  body_marker_wh_publisher_ = node_.advertise<MarkerArrayWithHeader>("body_tracking_data_sync", 1);
+  if (params_.body_tracking_enabled) {
+    body_marker_publisher_ = node_.advertise<MarkerArray>("body_tracking_data", 1);
+    body_marker_wh_publisher_ = node_.advertise<MarkerArrayWithHeader>("body_tracking_data_sync", 1);
 
-  body_index_map_publisher_ = image_transport_.advertise("body_index_map/image_raw", 1);
+    body_index_map_publisher_ = image_transport_.advertise("body_index_map/image_raw", 1);
+  }
 #endif
 }
 
@@ -450,7 +454,7 @@ k4a_result_t K4AROSDevice::getJpegRgbFrame(const k4a::capture& capture, sensor_m
   }
 
   const uint8_t* jpeg_frame_buffer = k4a_jpeg_frame.get_buffer();
-  jpeg_image->format = "jpeg";
+  jpeg_image->format = "bgra8; jpeg compressed bgr8";
   jpeg_image->data.assign(jpeg_frame_buffer, jpeg_frame_buffer + k4a_jpeg_frame.get_size());
   return K4A_RESULT_SUCCEEDED;
 }
